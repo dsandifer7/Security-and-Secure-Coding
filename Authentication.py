@@ -7,6 +7,13 @@ users={
     "test" : "user",
 }
 
+#login function
+def login(username):
+    if username in users:
+        print(f"Login successful. Role: {users[username]}")
+    else:
+        print("Login failed. Username not found.")
+
 #function for admin use only
 def admin_only(role):
     if role == "admin":
@@ -18,12 +25,13 @@ def admin_only(role):
         print("Access denied: Admins only.")
             
 #function for user only
-def user_only(role, curren):
+def user_only(role, current_username, new_username):
     if role == "user":
-        def update_username(username, new_username):
-            if username in users:
-                users[new_username] = users.pop(username)
-                print(f"Username updated to {new_username}.")
+        if current_username in users and users[current_username] == "user":
+            users[new_username] = users.pop(current_username)
+            print(f"Username updated to {new_username}.")
+        else:
+            print("Access denied: You can only update your own username.")
     else:
         print("Access denied: Users only.")
     
