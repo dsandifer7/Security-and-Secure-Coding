@@ -21,17 +21,20 @@ def admin_only(role):
             if username in users:
                 del users[username]
                 print(f"{username} deleted.")
+        delete_user("test")
     else:
         print("Access denied: Admins only.")
             
 #function for user only
 def user_only(role, current_username, new_username):
     if role == "user":
-        if current_username in users and users[current_username] == "user":
-            users[new_username] = users.pop(current_username)
-            print(f"Username updated to {new_username}.")
-        else:
-            print("Access denied: You can only update your own username.")
+        def update_username(current_username, new_username):
+            if current_username in users and users[current_username] == "user":
+                users[new_username] = users.pop(current_username)
+                print(f"Username updated to {new_username}.")
+            else:
+                print("Access denied: You can only update your own username.")
+        update_username("test", "updated_test")        
     else:
         print("Access denied: Users only.")
     
