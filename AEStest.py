@@ -27,4 +27,17 @@ count = 100000
 hmac_hash_module = SHA256
 
 key = PBKDF2(password_bytes, salt, dkLen=32, count=100000, hmac_hash_module=SHA256)
-print(key) 
+# print(key) 
+
+# to encrypt we need to use a specific AES MODE 
+# create a new AES cipher in GCM mode
+
+cipher = AES.new(key, AES.MODE_GCM)
+encrypted_message, tag = cipher.encrypt_and_digest(message.encode('utf-8'))
+nonce = cipher.nonce # get the nonce from the cipher object number used once nonce
+#print(encrypted_message)
+
+# to decrypt the message we need the key, tag, nonce, encrypted message, and salt
+decrypt = AES.new(key, AES.MODE_GCM, nonce=nonce)
+decrypted_message = decrypt.decrypt_and_verify(encrypted_message, tag)
+print(decrypted_message.decode('utf-8'))
