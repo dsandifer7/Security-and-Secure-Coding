@@ -1,0 +1,64 @@
+import hashlib
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+from Crypto.Protocol.KDF import PBKDF2
+from Crypto.Hash import SHA256
+
+def SHA256_hash():
+    message = input("Enter message to hash: ")
+    hashed_message = hashlib.sha256(message.encode('utf-8')).hexdigest() #this line does the same thing as all four below 
+    #encoded_string = string.encode("utf-8") turns message into bytes
+    #hashed_string = hashlib.sha256() creates an empty sha256 hash object
+    #hashed_string.update(encoded_string) bytes are turned into a hash object
+    #hex_digest = hashed_string.hexdigest() turns the hash object into a readable hexadecimal string
+    return hashed_message, message
+    
+def encrypt_message(password, message, hashed_message):
+    password = input("Enter password for encryption: ")   
+    password_bytes = password.encode('utf-8')
+    salt = get_random_bytes(16)
+    dkLen = 32 # AES-256
+    count = 100000
+    hmac_hash_module = SHA256
+    key = PBKDF2(password_bytes, salt, dkLen=32, count=100000, hmac_hash_module=SHA256)
+    cipher = AES.new(key, AES.MODE_GCM)
+    encrypted_message, tag = cipher.encrypt_and_digest(message.encode('utf-8'))
+    nonce = cipher.nonce # get the nonce from the cipher object number used once
+    return encrypted_message, tag , nonce, salt
+
+def decrypt_message(password, encrypted_message, tag, nonce, salt):
+    password = input("Enter password for decryption: ")   
+    password_bytes = password.encode('utf-8')
+    key = PBKDF2(password_bytes, salt, dkLen=32, count=100000, hmac_hash_module=SHA256)
+    decrypt = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    try:
+        decrypted_message = decrypt.decrypt_and_verify(encrypted_message, tag)  # this line is to try to show my error message and not kill the program if passwords dont match
+        return decrypted_message.decode('utf-8')
+    except ValueError:
+        return None
+
+def decrypted_hash(decrypted_message):
+    decrypted_hashed_message = hashlib.sha256(decrypted_message.encode('utf-8')).hexdigest()
+    return decrypted_hashed_message
+
+def main():
+    hashed_message, message = SHA256_hash()
+    print(f"SHA-256 Hash: {hashed_message}")
+      
+    encrypted_message, tag , nonce, salt = encrypt_message("", message, hashed_message)
+    print(f"Encrypted Message: {encrypted_message}")
+    
+    decrypted_message = decrypt_message("", encrypted_message, tag, nonce, salt)
+    if decrypted_message is None:
+        print("Decryption failed: Passwords do not match")
+        return
+    print(f"Decrypted Message: {decrypted_message}")
+    
+    decrypted_hashed_message = decrypted_hash(decrypted_message)
+    if decrypted_hashed_message == hashed_message:
+        print("Hashes match: Integrity verified")
+    else:
+        print("Hashes do not match!")
+        
+if __name__ == "__main__":
+    main()
